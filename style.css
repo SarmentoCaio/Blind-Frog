@@ -1,0 +1,33 @@
+body * html {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    
+}
+
+body {
+    width: 100vw;
+    height: 100vh;
+    margin: 0;
+    background-image: url("background.png");
+    background-repeat: no-repeat;
+    background-attachment: cover;
+    background-size: 100% 100%;
+    overflow-y: hidden;
+    overflow-x: hidden;
+}
+
+.logomarca{
+ width: 10vw;
+ height: 10vh;
+}
+
+canvas {
+    transform: translateY(30%);
+    background: #dff3ff;
+    display: block;
+    margin: 0 auto;
+    border: 2px solid #000;
+    padding: 0;
+}
+    
