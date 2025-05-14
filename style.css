@@ -23,7 +23,7 @@ body {
 }
 
 canvas {
-    transform: translateY(30%);
+    transform: translateY(10%);
     background: #dff3ff;
     display: block;
     margin: 0 auto;

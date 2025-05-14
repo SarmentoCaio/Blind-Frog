@@ -2,7 +2,7 @@ const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 
 const frog = { x: 50, y: 300, width: 64, height: 64, speed: 8 };
-const oliveira = { x: 400, y: 300, width: 80, height: 80, speed: 2 };
+const oliveira = { x: 400, y: 300, width: 80, height: 80, speed: 3 };
 let keys = {};
 let gameOver = false;
 
@@ -41,6 +41,14 @@ function update() {
   if (frog.y + frog.height < 0) frog.y = canvas.height;
   if (frog.y > canvas.height) frog.y = -frog.height;
 
+
+// Wrap horizontal
+if (frog.x + frog.width < 0) frog.x = canvas.width;
+if (frog.x > canvas.width) frog.x = -frog.width;
+
+// Wrap vertical
+if (frog.y + frog.height < 0) frog.y = canvas.height;
+if (frog.y > canvas.height) frog.y = -frog.height;
 
   // Colisão
   if (isColliding(frog, oliveira)) {
