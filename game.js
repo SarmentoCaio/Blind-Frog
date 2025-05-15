@@ -13,7 +13,7 @@ let gameOver = false;
 let gameStarted = false;
 
 // Imagens do jogo
-const frogImg = new Image(); frogImg.src = 'assets/frog.png';
+
 const oliveiraImg = new Image(); oliveiraImg.src = 'assets/assusta.png';
 const menuImg = new Image(); menuImg.src = 'assets/menu.png';
 
@@ -21,19 +21,41 @@ const menuImg = new Image(); menuImg.src = 'assets/menu.png';
 const pererecaImgs = [
     new Image(), new Image(), new Image(), new Image()
 ];
+
 pererecaImgs[0].src = 'assets/animations/perereca1.png'; // parada
 pererecaImgs[1].src = 'assets/animations/perereca2.png';
 pererecaImgs[2].src = 'assets/animations/perereca3.png';
 pererecaImgs[3].src = 'assets/animations/perereca4.png';
 
-// Controles de animação
+// Animação da Sapo
+
+const frogImg = [
+    new Image(), new Image(), new Image(), new Image()
+];
+
+frogImg[0].src = 'assets/animations/frog_blind1.png'; // parado
+frogImg[1].src = 'assets/animations/frog_blind2.png';
+frogImg[2].src = 'assets/animations/frog_blind3.png';
+frogImg[3].src = 'assets/animations/frog_blind4.png';
+
+// Controles de animação Perereca
 let pererecaFrameIndex = 0;
 let pererecaFrameDelay = 0;
 const pererecaFrameSpeed = 10;
 
-// Movimento da perereca
+// Movimento da Perereca
 let pererecaDir = { x: 1, y: 0 };
 let pererecaChangeTime = 0;
+
+// Controles de animação Sapo
+let frogFrameIndex = 0;
+let frogFrameDelay = 0;
+const frogFrameSpeed = 10;
+
+// Movimento do Sapo
+let frogDir = { x: 1, y: 0 };
+let frogChangeTime = 0;
+
 
 // Botões do menu
 const menuButtons = {
@@ -139,6 +161,19 @@ function update() {
             resetGame();
         }, 100);
     }
+
+    // Animação do sapo
+const frogIsMoving = keys["arrowright"] || keys["d"] || keys["arrowleft"] || keys["a"] || keys["arrowup"] || keys["w"] || keys["arrowdown"] || keys["s"];
+if (frogIsMoving) {
+    frogFrameDelay++;
+    if (frogFrameDelay >= frogFrameSpeed) {
+        frogFrameDelay = 0;
+        frogFrameIndex++;
+        if (frogFrameIndex > 3) frogFrameIndex = 1; // pula a frame 0 que é "parado"
+    }
+} else {
+    frogFrameIndex = 0; // parado
+}
 }
 
 // Evento para atualizar posição do mouse e alterar cursor
@@ -259,7 +294,7 @@ function draw() {
     }
     ctx.restore();
 
-    ctx.drawImage(frogImg, frog.x, frog.y, frog.width, frog.height);
+    ctx.drawImage(frogImg[frogFrameIndex], frog.x, frog.y, frog.width, frog.height);
     ctx.drawImage(oliveiraImg, oliveira.x, oliveira.y, oliveira.width, oliveira.height);
 
     if (gameOver) {
