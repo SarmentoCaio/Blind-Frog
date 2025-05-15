@@ -1,35 +1,50 @@
 // === VARIÁVEIS E IMAGENS ===
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
+const heartsContainer = document.getElementById('hearts');
 
 // Elementos do jogo
 const frog = { x: 50, y: 300, width: 64, height: 64, speed: 8 };
 const oliveira = { x: 400, y: 300, width: 80, height: 80, speed: 3 };
 const perereca = { x: 200, y: 100, width: 48, height: 48, speed: 8 };
 
+// Sistema de vidas
+let lives = 3;
+
 // Estados do jogo
 let keys = {};
 let gameOver = false;
 let gameStarted = false;
 
-// Imagens do jogo
-const frogImg = new Image(); frogImg.src = 'assets/frog.png';
-const oliveiraImg = new Image(); oliveiraImg.src = 'assets/assusta.png';
-const menuImg = new Image(); menuImg.src = 'assets/menu.png';
+// Animação do sapo
+const frogImgs = [
+    new Image(), new Image(), new Image(), new Image()
+];
+frogImgs[0].src = 'assets/animations/frog_blind1.png'; // parado
+frogImgs[1].src = 'assets/animations/frog_blind2.png';
+frogImgs[2].src = 'assets/animations/frog_blind3.png';
+frogImgs[3].src = 'assets/animations/frog_blind4.png';
+
+let frogFrameIndex = 0;
+let frogFrameDelay = 0;
+const frogFrameSpeed = 10;
 
 // Animação da perereca
 const pererecaImgs = [
     new Image(), new Image(), new Image(), new Image()
 ];
-pererecaImgs[0].src = 'assets/animations/perereca1.png'; // parada
+pererecaImgs[0].src = 'assets/animations/perereca1.png';
 pererecaImgs[1].src = 'assets/animations/perereca2.png';
 pererecaImgs[2].src = 'assets/animations/perereca3.png';
 pererecaImgs[3].src = 'assets/animations/perereca4.png';
 
-// Controles de animação
 let pererecaFrameIndex = 0;
 let pererecaFrameDelay = 0;
 const pererecaFrameSpeed = 10;
+
+// Outras imagens
+const oliveiraImg = new Image(); oliveiraImg.src = 'assets/assusta.png';
+const menuImg = new Image(); menuImg.src = 'assets/menu.png';
 
 // Movimento da perereca
 let pererecaDir = { x: 1, y: 0 };
@@ -58,7 +73,6 @@ canvas.addEventListener('click', (e) => {
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
     
-    // Verifica qual botão foi clicado
     for (const button in menuButtons) {
         const b = menuButtons[button];
         if (x >= b.x && x <= b.x + b.width && y >= b.y && y <= b.y + b.height) {
@@ -69,8 +83,33 @@ canvas.addEventListener('click', (e) => {
 });
 
 // === FUNÇÕES DO JOGO ===
+function updateHeartsDisplay() {
+    heartsContainer.innerHTML = '';
+    for (let i = 0; i < lives; i++) {
+        const heart = document.createElement('img');
+        heart.src = 'assets/coracao.png';
+        heart.className = 'heart';
+        heartsContainer.appendChild(heart);
+    }
+}
+
 function update() {
     if (!gameStarted || gameOver) return;
+
+    // Animação do sapo
+    const frogIsMoving = keys["arrowright"] || keys["d"] || keys["arrowleft"] || keys["a"] || 
+                        keys["arrowup"] || keys["w"] || keys["arrowdown"] || keys["s"];
+    
+    if (frogIsMoving) {
+        frogFrameDelay++;
+        if (frogFrameDelay >= frogFrameSpeed) {
+            frogFrameDelay = 0;
+            frogFrameIndex++;
+            if (frogFrameIndex > 3) frogFrameIndex = 1; // pula a frame 0 que é "parado"
+        }
+    } else {
+        frogFrameIndex = 0; // parado
+    }
 
     // Movimento do sapo
     if (keys["arrowright"] || keys["d"]) frog.x += frog.speed;
@@ -133,15 +172,23 @@ function update() {
 
     // Colisão
     if (isColliding(frog, oliveira)) {
-        gameOver = true;
-        setTimeout(() => {
-            alert("Oliveira me assustou");
-            resetGame();
-        }, 100);
+        lives--;
+        updateHeartsDisplay();
+        if (lives <= 0) {
+            gameOver = true;
+            setTimeout(() => {
+                alert("Oliveira me assustou");
+                resetGame();
+            }, 100);
+        } else {
+            frog.x = 50;
+            frog.y = 300;
+            oliveira.x = 400;
+            oliveira.y = 300;
+        }
     }
 }
 
-// Evento para atualizar posição do mouse e alterar cursor
 canvas.addEventListener('mousemove', (e) => {
     const rect = canvas.getBoundingClientRect();
     mouseX = e.clientX - rect.left;
@@ -194,7 +241,6 @@ pctx.stroke();
 
 const pattern = ctx.createPattern(patternCanvas, 'repeat');
 
-
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -216,7 +262,6 @@ function draw() {
             );
 
             ctx.fillStyle = pattern;
-
             ctx.fillRect(b.x, b.y, b.width, b.height);
 
             if (isHover) {
@@ -236,10 +281,10 @@ function draw() {
 
             let text = "";
             switch(key) {
-                case 'start': text = "Comece a Furar"; break;
-                case 'shop': text = "Loja (Upgrades)"; break;
-                case 'skins': text = "Mudar Skins"; break;
-                case 'quit': text = "Sair"; break;
+                case 'start': text = "Tente Furar"; break;
+                case 'shop': text = "Good Price"; break;
+                case 'skins': text = "Altere sua Carcaça"; break;
+                case 'quit': text = "Here Went"; break;
             }
             ctx.fillText(text, b.x + b.width / 2, b.y + b.height / 2);
 
@@ -249,6 +294,7 @@ function draw() {
         return;
     }
 
+    // Desenha a perereca com animação
     ctx.save();
     if (pererecaDir.x < 0) {
         ctx.translate(perereca.x + perereca.width / 2, perereca.y + perereca.height / 2);
@@ -259,7 +305,10 @@ function draw() {
     }
     ctx.restore();
 
-    ctx.drawImage(frogImg, frog.x, frog.y, frog.width, frog.height);
+    // Desenha o sapo com animação
+    ctx.drawImage(frogImgs[frogFrameIndex], frog.x, frog.y, frog.width, frog.height);
+
+    // Desenha o oliveira
     ctx.drawImage(oliveiraImg, oliveira.x, oliveira.y, oliveira.width, oliveira.height);
 
     if (gameOver) {
@@ -283,6 +332,7 @@ function handleMenuClick(button) {
     switch(button) {
         case 'start':
             gameStarted = true;
+            updateHeartsDisplay();
             break;
         case 'shop':
             alert('Loja ainda não implementada!');
@@ -301,14 +351,16 @@ function handleMenuClick(button) {
 function resetGame() {
     frog.x = 50; frog.y = 300;
     oliveira.x = 400; oliveira.y = 300;
+    lives = 3;
     gameOver = false;
     gameStarted = false;
     keys = {};
+    updateHeartsDisplay();
 }
 
 // === INICIALIZAÇÃO ===
 let loadedImages = 0;
-const totalImages = 6; // frog, oliveira, menu + 4 perereca
+const totalImages = 8; // 4 frog + 4 perereca + oliveira + menu
 
 function checkLoaded() {
     loadedImages++;
@@ -318,10 +370,10 @@ function checkLoaded() {
 }
 
 // Configura callbacks para carregamento de imagens
-frogImg.onload = checkLoaded;
+frogImgs.forEach(img => img.onload = checkLoaded);
+pererecaImgs.forEach(img => img.onload = checkLoaded);
 oliveiraImg.onload = checkLoaded;
 menuImg.onload = checkLoaded;
-pererecaImgs.forEach(img => img.onload = checkLoaded);
 
 // Loop principal do jogo
 function loop() {
