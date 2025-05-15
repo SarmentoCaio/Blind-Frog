@@ -167,22 +167,47 @@ canvas.addEventListener('mousemove', (e) => {
     }
 });
 
+const patternCanvas = document.createElement('canvas');
+patternCanvas.width = 20;
+patternCanvas.height = 20;
+const pctx = patternCanvas.getContext('2d');
+
+pctx.fillStyle = '#1e3a1e';
+pctx.fillRect(0, 0, 20, 20);
+
+pctx.strokeStyle = '#2a6f2a';
+pctx.lineWidth = 2;
+pctx.beginPath();
+pctx.moveTo(0, 20);
+pctx.lineTo(20, 0);
+pctx.stroke();
+
+pctx.beginPath();
+pctx.moveTo(-5, 20);
+pctx.lineTo(15, 0);
+pctx.stroke();
+
+pctx.beginPath();
+pctx.moveTo(5, 20);
+pctx.lineTo(25, 0);
+pctx.stroke();
+
+const pattern = ctx.createPattern(patternCanvas, 'repeat');
+
+
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     if (!gameStarted) {
-        // Desenha o fundo do menu
         ctx.drawImage(menuImg, 0, 0, canvas.width, canvas.height);
 
         ctx.font = "28px Arial";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
 
-        // Desenha botões verdes com efeito hover
         for (const key in menuButtons) {
             const b = menuButtons[key];
 
-            // Detecta se mouse está sobre o botão
             const isHover = (
                 mouseX >= b.x &&
                 mouseX <= b.x + b.width &&
@@ -190,31 +215,40 @@ function draw() {
                 mouseY <= b.y + b.height
             );
 
-            // Fundo verde - claro se hover, escuro se normal
-            ctx.fillStyle = isHover ? "#66cc66" : "#228B22";
+            ctx.fillStyle = pattern;
+
             ctx.fillRect(b.x, b.y, b.width, b.height);
 
-            // Borda branca
+            if (isHover) {
+                ctx.fillStyle = 'rgba(102, 204, 102, 0.4)';
+                ctx.fillRect(b.x, b.y, b.width, b.height);
+            }
+
             ctx.strokeStyle = "white";
-            ctx.lineWidth = 3;
+            ctx.lineWidth = 2;
             ctx.strokeRect(b.x, b.y, b.width, b.height);
 
-            // Texto branco do botão
             ctx.fillStyle = "white";
+            ctx.shadowColor = "rgba(0, 0, 0, 0.6)";
+            ctx.shadowOffsetX = 1;
+            ctx.shadowOffsetY = 1;
+            ctx.shadowBlur = 2;
+
             let text = "";
             switch(key) {
                 case 'start': text = "Comece a Furar"; break;
-                case 'shop': text = "Good Price"; break;
-                case 'skins': text = "Escolha sua Carcaça"; break;
-                case 'quit': text = "Here Went"; break;
+                case 'shop': text = "Loja (Upgrades)"; break;
+                case 'skins': text = "Mudar Skins"; break;
+                case 'quit': text = "Sair"; break;
             }
             ctx.fillText(text, b.x + b.width / 2, b.y + b.height / 2);
+
+            ctx.shadowColor = "transparent";
         }
 
-        return; // Para aqui pra não desenhar o jogo
+        return;
     }
 
-    // Desenha a perereca invertida se estiver indo para esquerda
     ctx.save();
     if (pererecaDir.x < 0) {
         ctx.translate(perereca.x + perereca.width / 2, perereca.y + perereca.height / 2);
@@ -225,7 +259,6 @@ function draw() {
     }
     ctx.restore();
 
-    // Desenha o sapo e o oliveira normalmente
     ctx.drawImage(frogImg, frog.x, frog.y, frog.width, frog.height);
     ctx.drawImage(oliveiraImg, oliveira.x, oliveira.y, oliveira.width, oliveira.height);
 
@@ -235,10 +268,6 @@ function draw() {
         ctx.fillText("Game Over", 330, 200);
     }
 }
-
-
-
-
 
 function isColliding(a, b) {
     const padding = 1;
