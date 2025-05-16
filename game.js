@@ -127,11 +127,17 @@ canvas.addEventListener('mousemove', (e) => {
 });
 
 // === FUNÇÕES DO JOGO ===
+const maxLives = 3; // Total máximo de vidas
+
 function updateHeartsDisplay() {
     heartsContainer.innerHTML = '';
-    for (let i = 0; i < lives; i++) {
+    for (let i = 0; i < maxLives; i++) {
         const heart = document.createElement('img');
-        heart.src = 'assets/coracao.png';
+        if (i < lives) {
+            heart.src = 'assets/coracao.png'; // vida cheia
+        } else {
+            heart.src = 'assets/coracaovazio.png'; // vida vazia
+        }
         heart.className = 'heart';
         heartsContainer.appendChild(heart);
     }
