@@ -10,6 +10,7 @@ const perereca = { x: 200, y: 100, width: 48, height: 48, speed: 8 };
 
 // Sistema de vidas
 let lives = 3;
+let frogFacingRight = true; // Direção inicial do sapo
 
 // Estados do jogo
 let keys = {};
@@ -20,14 +21,14 @@ let gameStarted = false;
 const frogImgs = [
     new Image(), new Image(), new Image(), new Image()
 ];
-frogImgs[0].src = 'assets/animations/frog_blind1.png'; // parado
+frogImgs[0].src = 'assets/animations/frog_blind1.png';
 frogImgs[1].src = 'assets/animations/frog_blind2.png';
 frogImgs[2].src = 'assets/animations/frog_blind3.png';
 frogImgs[3].src = 'assets/animations/frog_blind4.png';
 
 let frogFrameIndex = 0;
 let frogFrameDelay = 0;
-const frogFrameSpeed = 10;
+const frogFrameSpeed = 8;
 
 // Animação da perereca
 const pererecaImgs = [
@@ -96,26 +97,33 @@ function updateHeartsDisplay() {
 function update() {
     if (!gameStarted || gameOver) return;
 
+    // Controle de direção do sapo
+    if (keys["arrowright"] || keys["d"]) {
+        frog.x += frog.speed;
+        frogFacingRight = true;
+    }
+    if (keys["arrowleft"] || keys["a"]) {
+        frog.x -= frog.speed;
+        frogFacingRight = false;
+    }
+    if (keys["arrowup"] || keys["w"]) frog.y -= frog.speed;
+    if (keys["arrowdown"] || keys["s"]) frog.y += frog.speed;
+
     // Animação do sapo
-    const frogIsMoving = keys["arrowright"] || keys["d"] || keys["arrowleft"] || keys["a"] || 
-                        keys["arrowup"] || keys["w"] || keys["arrowdown"] || keys["s"];
+    const frogIsMoving = keys["arrowright"] || keys["d"] || 
+                       keys["arrowleft"] || keys["a"] || 
+                       keys["arrowup"] || keys["w"] || 
+                       keys["arrowdown"] || keys["s"];
     
     if (frogIsMoving) {
         frogFrameDelay++;
         if (frogFrameDelay >= frogFrameSpeed) {
             frogFrameDelay = 0;
-            frogFrameIndex++;
-            if (frogFrameIndex > 3) frogFrameIndex = 1; // pula a frame 0 que é "parado"
+            frogFrameIndex = (frogFrameIndex + 1) % 4;
         }
     } else {
-        frogFrameIndex = 0; // parado
+        frogFrameIndex = 0;
     }
-
-    // Movimento do sapo
-    if (keys["arrowright"] || keys["d"]) frog.x += frog.speed;
-    if (keys["arrowleft"] || keys["a"]) frog.x -= frog.speed;
-    if (keys["arrowup"] || keys["w"]) frog.y -= frog.speed;
-    if (keys["arrowdown"] || keys["s"]) frog.y += frog.speed;
 
     // Movimento do oliveira
     if (frog.x > oliveira.x) oliveira.x += oliveira.speed;
@@ -305,8 +313,16 @@ function draw() {
     }
     ctx.restore();
 
-    // Desenha o sapo com animação
-    ctx.drawImage(frogImgs[frogFrameIndex], frog.x, frog.y, frog.width, frog.height);
+    // Desenha o sapo com animação e direção
+    ctx.save();
+    if (!frogFacingRight) {
+        ctx.translate(frog.x + frog.width / 2, frog.y + frog.height / 2);
+        ctx.scale(-1, 1);
+        ctx.drawImage(frogImgs[frogFrameIndex], -frog.width / 2, -frog.height / 2, frog.width, frog.height);
+    } else {
+        ctx.drawImage(frogImgs[frogFrameIndex], frog.x, frog.y, frog.width, frog.height);
+    }
+    ctx.restore();
 
     // Desenha o oliveira
     ctx.drawImage(oliveiraImg, oliveira.x, oliveira.y, oliveira.width, oliveira.height);
@@ -352,6 +368,7 @@ function resetGame() {
     frog.x = 50; frog.y = 300;
     oliveira.x = 400; oliveira.y = 300;
     lives = 3;
+    frogFacingRight = true;
     gameOver = false;
     gameStarted = false;
     keys = {};
@@ -360,7 +377,7 @@ function resetGame() {
 
 // === INICIALIZAÇÃO ===
 let loadedImages = 0;
-const totalImages = 8; // 4 frog + 4 perereca + oliveira + menu
+const totalImages = 10; // 4 frog + 4 perereca + oliveira + menu
 
 function checkLoaded() {
     loadedImages++;
