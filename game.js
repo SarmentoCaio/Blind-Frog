@@ -291,14 +291,23 @@ function drawButtons() {
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
 
-    for (const key in menuButtons) {
-        const b = menuButtons[key];
-        const isHover = (mouseX >= b.x && mouseX <= b.x + b.width &&
-                         mouseY >= b.y && mouseY <= b.y + b.height);
+    if (gameOver) {
+        // Só botão "Tentar Novamente" no canto inferior direito
+        const b = {
+            width: 300,
+            height: 50,
+            x: canvas.width - 310, // 10px de margem da direita
+            y: canvas.height - 60  // 10px de margem de baixo
+        };
+
+        
 
         ctx.fillStyle = pattern;
         ctx.fillRect(b.x, b.y, b.width, b.height);
 
+        // Hover effect só se quiser manter (pode remover se preferir)
+        const isHover = (mouseX >= b.x && mouseX <= b.x + b.width &&
+                         mouseY >= b.y && mouseY <= b.y + b.height);
         if (isHover) {
             ctx.fillStyle = 'rgba(102, 204, 102, 0.4)';
             ctx.fillRect(b.x, b.y, b.width, b.height);
@@ -314,15 +323,44 @@ function drawButtons() {
         ctx.shadowOffsetY = 1;
         ctx.shadowBlur = 2;
 
-        let text = "";
-        switch(key) {
-            case 'start': text = gameOver ? "Tentar Novamente" : "Tente Furar"; break;
-            case 'shop': text = "Good Price"; break;
-            case 'skins': text = "Altere sua Carcaça"; break;
-            case 'quit': text = "Here Went"; break;
-        }
-        ctx.fillText(text, b.x + b.width / 2, b.y + b.height / 2);
+        ctx.fillText("Tentar Novamente", b.x + b.width / 2, b.y + b.height / 2);
+
         ctx.shadowColor = "transparent";
+    } else {
+        // Comportamento normal dos botões no menu (todos)
+        for (const key in menuButtons) {
+            const b = menuButtons[key];
+            const isHover = (mouseX >= b.x && mouseX <= b.x + b.width &&
+                             mouseY >= b.y && mouseY <= b.y + b.height);
+
+            ctx.fillStyle = pattern;
+            ctx.fillRect(b.x, b.y, b.width, b.height);
+
+            if (isHover) {
+                ctx.fillStyle = 'rgba(102, 204, 102, 0.4)';
+                ctx.fillRect(b.x, b.y, b.width, b.height);
+            }
+
+            ctx.strokeStyle = "white";
+            ctx.lineWidth = 2;
+            ctx.strokeRect(b.x, b.y, b.width, b.height);
+
+            ctx.fillStyle = "white";
+            ctx.shadowColor = "rgba(0, 0, 0, 0.6)";
+            ctx.shadowOffsetX = 1;
+            ctx.shadowOffsetY = 1;
+            ctx.shadowBlur = 2;
+
+            let text = "";
+            switch(key) {
+                case 'start': text = "Tente Furar"; break;
+                case 'shop': text = "Good Price"; break;
+                case 'skins': text = "Altere sua Carcaça"; break;
+                case 'quit': text = "Here Went"; break;
+            }
+            ctx.fillText(text, b.x + b.width / 2, b.y + b.height / 2);
+            ctx.shadowColor = "transparent";
+        }
     }
 }
 
@@ -358,6 +396,13 @@ function handleMenuClick(button) {
             break;
     }
 }
+
+
+
+//Clique do tentar novamente
+
+
+
 
 function resetGame() {
     frog.x = 50;
