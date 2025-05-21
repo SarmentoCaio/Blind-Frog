@@ -64,7 +64,7 @@ const menuButtons = {
 let mouseX = 0;
 let mouseY = 0;
 
-// Padrão de fundo dos botões
+// Padrão de fundo dos botões (verde - para o menu)
 const patternCanvas = document.createElement('canvas');
 patternCanvas.width = 20;
 patternCanvas.height = 20;
@@ -86,6 +86,29 @@ pctx.moveTo(5, 20);
 pctx.lineTo(25, 0);
 pctx.stroke();
 const pattern = ctx.createPattern(patternCanvas, 'repeat');
+
+// Padrão vermelho para botões do Game Over
+const redPatternCanvas = document.createElement('canvas');
+redPatternCanvas.width = 20;
+redPatternCanvas.height = 20;
+const rpctx = redPatternCanvas.getContext('2d');
+rpctx.fillStyle = '#5c0000';
+rpctx.fillRect(0, 0, 20, 20);
+rpctx.strokeStyle = '#8a0000';
+rpctx.lineWidth = 2;
+rpctx.beginPath();
+rpctx.moveTo(0, 20);
+rpctx.lineTo(20, 0);
+rpctx.stroke();
+rpctx.beginPath();
+rpctx.moveTo(-5, 20);
+rpctx.lineTo(15, 0);
+rpctx.stroke();
+rpctx.beginPath();
+rpctx.moveTo(5, 20);
+rpctx.lineTo(25, 0);
+rpctx.stroke();
+const redPattern = ctx.createPattern(redPatternCanvas, 'repeat');
 
 // === EVENTOS ===
 document.addEventListener("keydown", (e) => keys[e.key.toLowerCase()] = true);
@@ -127,16 +150,16 @@ canvas.addEventListener('mousemove', (e) => {
 });
 
 // === FUNÇÕES DO JOGO ===
-const maxLives = 3; // Total máximo de vidas
+const maxLives = 3;
 
 function updateHeartsDisplay() {
     heartsContainer.innerHTML = '';
     for (let i = 0; i < maxLives; i++) {
         const heart = document.createElement('img');
         if (i < lives) {
-            heart.src = 'assets/coracao.png'; // vida cheia
+            heart.src = 'assets/coracao.png';
         } else {
-            heart.src = 'assets/coracaoVazio.png'; // vida vazia
+            heart.src = 'assets/coracaoVazio.png';
         }
         heart.className = 'heart';
         heartsContainer.appendChild(heart);
@@ -146,7 +169,6 @@ function updateHeartsDisplay() {
 function update() {
     if (!gameStarted || gameOver) return;
 
-    // Controle de direção do sapo
     if (keys["arrowright"] || keys["d"]) {
         frog.x += frog.speed;
         frogFacingRight = true;
@@ -158,7 +180,6 @@ function update() {
     if (keys["arrowup"] || keys["w"]) frog.y -= frog.speed;
     if (keys["arrowdown"] || keys["s"]) frog.y += frog.speed;
 
-    // Animação do sapo
     const frogIsMoving = keys["arrowright"] || keys["d"] || 
                        keys["arrowleft"] || keys["a"] || 
                        keys["arrowup"] || keys["w"] || 
@@ -174,13 +195,11 @@ function update() {
         frogFrameIndex = 0;
     }
 
-    // Movimento do oliveira
     if (frog.x > oliveira.x) oliveira.x += oliveira.speed;
     else if (frog.x < oliveira.x) oliveira.x -= oliveira.speed;
     if (frog.y > oliveira.y) oliveira.y += oliveira.speed;
     else if (frog.y < oliveira.y) oliveira.y -= oliveira.speed;
 
-    // Movimento da perereca
     const prevX = perereca.x;
     const prevY = perereca.y;
     const dx = frog.x - perereca.x;
@@ -202,7 +221,6 @@ function update() {
         }
     }
 
-    // Animação da perereca
     const isMoving = Math.abs(perereca.x - prevX) > 0.5 || Math.abs(perereca.y - prevY) > 0.5;
     if (isMoving) {
         pererecaFrameDelay++;
@@ -215,19 +233,16 @@ function update() {
         pererecaFrameIndex = 0;
     }
 
-    // Wrap perereca
     if (perereca.x + perereca.width < 0) perereca.x = canvas.width;
     if (perereca.x > canvas.width) perereca.x = -perereca.width;
     if (perereca.y + perereca.height < 0) perereca.y = canvas.height;
     if (perereca.y > canvas.height) perereca.y = -perereca.height;
 
-    // Wrap frog
     if (frog.x + frog.width < 0) frog.x = canvas.width;
     if (frog.x > canvas.width) frog.x = -frog.width;
     if (frog.y + frog.height < 0) frog.y = canvas.height;
     if (frog.y > canvas.height) frog.y = -frog.height;
 
-    // Colisão
     if (isColliding(frog, oliveira)) {
         lives--;
         updateHeartsDisplay();
@@ -246,21 +261,17 @@ function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     if (gameOver) {
-        // Tela de Game Over
         ctx.drawImage(gameOverImg, 0, 0, canvas.width, canvas.height);
         drawButtons();
         return;
     }
 
     if (!gameStarted) {
-        // Tela de Menu
         ctx.drawImage(menuImg, 0, 0, canvas.width, canvas.height);
         drawButtons();
         return;
     }
 
-    // Jogo principal
-    // Desenha a perereca
     ctx.save();
     if (pererecaDir.x < 0) {
         ctx.translate(perereca.x + perereca.width / 2, perereca.y + perereca.height / 2);
@@ -271,7 +282,6 @@ function draw() {
     }
     ctx.restore();
 
-    // Desenha o sapo
     ctx.save();
     if (!frogFacingRight) {
         ctx.translate(frog.x + frog.width / 2, frog.y + frog.height / 2);
@@ -282,7 +292,6 @@ function draw() {
     }
     ctx.restore();
 
-    // Desenha o oliveira
     ctx.drawImage(oliveiraImg, oliveira.x, oliveira.y, oliveira.width, oliveira.height);
 }
 
@@ -292,43 +301,68 @@ function drawButtons() {
     ctx.textBaseline = "middle";
 
     if (gameOver) {
-        // Só botão "Tentar Novamente" no canto inferior direito
-        const b = {
+        const tryAgainBtn = {
             width: 300,
             height: 50,
-            x: canvas.width - 310, // 10px de margem da direita
-            y: canvas.height - 60  // 10px de margem de baixo
+            x: canvas.width - 310,
+            y: canvas.height - 120
         };
 
+        const menuBtn = {
+            width: 300,
+            height: 50,
+            x: canvas.width - 310,
+            y: canvas.height - 60
+        };
+
+        // Botões vermelhos do Game Over
+        ctx.fillStyle = redPattern;
+        ctx.fillRect(tryAgainBtn.x, tryAgainBtn.y, tryAgainBtn.width, tryAgainBtn.height);
         
-
-        ctx.fillStyle = pattern;
-        ctx.fillRect(b.x, b.y, b.width, b.height);
-
-        // Hover effect só se quiser manter (pode remover se preferir)
-        const isHover = (mouseX >= b.x && mouseX <= b.x + b.width &&
-                         mouseY >= b.y && mouseY <= b.y + b.height);
-        if (isHover) {
-            ctx.fillStyle = 'rgba(102, 204, 102, 0.4)';
-            ctx.fillRect(b.x, b.y, b.width, b.height);
+        const isHoverTryAgain = (mouseX >= tryAgainBtn.x && mouseX <= tryAgainBtn.x + tryAgainBtn.width &&
+                               mouseY >= tryAgainBtn.y && mouseY <= tryAgainBtn.y + tryAgainBtn.height);
+        if (isHoverTryAgain) {
+            ctx.fillStyle = 'rgba(139, 0, 0, 0.6)';
+            ctx.fillRect(tryAgainBtn.x, tryAgainBtn.y, tryAgainBtn.width, tryAgainBtn.height);
         }
 
-        ctx.strokeStyle = "white";
+        ctx.strokeStyle = "#8a0000";
         ctx.lineWidth = 2;
-        ctx.strokeRect(b.x, b.y, b.width, b.height);
+        ctx.strokeRect(tryAgainBtn.x, tryAgainBtn.y, tryAgainBtn.width, tryAgainBtn.height);
 
         ctx.fillStyle = "white";
         ctx.shadowColor = "rgba(0, 0, 0, 0.6)";
         ctx.shadowOffsetX = 1;
         ctx.shadowOffsetY = 1;
         ctx.shadowBlur = 2;
+        ctx.fillText("Tentar Novamente", tryAgainBtn.x + tryAgainBtn.width / 2, tryAgainBtn.y + tryAgainBtn.height / 2);
 
-        ctx.fillText("Tentar Novamente", b.x + b.width / 2, b.y + b.height / 2);
+        ctx.fillStyle = redPattern;
+        ctx.fillRect(menuBtn.x, menuBtn.y, menuBtn.width, menuBtn.height);
+        
+        const isHoverMenu = (mouseX >= menuBtn.x && mouseX <= menuBtn.x + menuBtn.width &&
+                           mouseY >= menuBtn.y && mouseY <= menuBtn.y + menuBtn.height);
+        if (isHoverMenu) {
+            ctx.fillStyle = 'rgba(139, 0, 0, 0.6)';
+            ctx.fillRect(menuBtn.x, menuBtn.y, menuBtn.width, menuBtn.height);
+        }
+
+        ctx.strokeStyle = "#8a0000";
+        ctx.lineWidth = 2;
+        ctx.strokeRect(menuBtn.x, menuBtn.y, menuBtn.width, menuBtn.height);
+
+        ctx.fillStyle = "white";
+        ctx.fillText("Voltar ao Menu", menuBtn.x + menuBtn.width / 2, menuBtn.y + menuBtn.height / 2);
 
         ctx.shadowColor = "transparent";
-    } else {
-        // Comportamento normal dos botões no menu (todos)
+        
+        menuButtons.tryAgain = tryAgainBtn;
+        menuButtons.menu = menuBtn;
+    } else if (!gameStarted) {
+        // Botões verdes do menu principal
         for (const key in menuButtons) {
+            if (key === 'tryAgain' || key === 'menu') continue;
+            
             const b = menuButtons[key];
             const isHover = (mouseX >= b.x && mouseX <= b.x + b.width &&
                              mouseY >= b.y && mouseY <= b.y + b.height);
@@ -375,12 +409,21 @@ function isColliding(a, b) {
 function handleMenuClick(button) {
     switch(button) {
         case 'start':
-            if (gameOver) {
-                resetGame();
-            } else {
-                gameStarted = true;
-                gameOver = false;
-            }
+            gameStarted = true;
+            gameOver = false;
+            updateHeartsDisplay();
+            break;
+        case 'tryAgain':
+            resetGame();
+            break;
+        case 'menu':
+            gameStarted = false;
+            gameOver = false;
+            lives = 3;
+            frog.x = 50;
+            frog.y = 300;
+            oliveira.x = 400;
+            oliveira.y = 300;
             updateHeartsDisplay();
             break;
         case 'shop':
@@ -397,13 +440,6 @@ function handleMenuClick(button) {
     }
 }
 
-
-
-//Clique do tentar novamente
-
-
-
-
 function resetGame() {
     frog.x = 50;
     frog.y = 300;
@@ -414,12 +450,16 @@ function resetGame() {
     gameOver = false;
     gameStarted = true;
     keys = {};
+    
+    delete menuButtons.tryAgain;
+    delete menuButtons.menu;
+    
     updateHeartsDisplay();
 }
 
 // === INICIALIZAÇÃO ===
 let loadedImages = 0;
-const totalImages = 11; // 4 frog + 4 perereca + oliveira + menu + gameover
+const totalImages = 11;
 
 function checkLoaded() {
     loadedImages++;
@@ -428,14 +468,12 @@ function checkLoaded() {
     }
 }
 
-// Configura callbacks para carregamento de imagens
 frogImgs.forEach(img => img.onload = checkLoaded);
 pererecaImgs.forEach(img => img.onload = checkLoaded);
 oliveiraImg.onload = checkLoaded;
 menuImg.onload = checkLoaded;
 gameOverImg.onload = checkLoaded;
 
-// Loop principal do jogo
 function loop() {
     update();
     draw();
