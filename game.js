@@ -136,7 +136,7 @@ function updateHeartsDisplay() {
         if (i < lives) {
             heart.src = 'assets/coracao.png'; // vida cheia
         } else {
-            heart.src = 'assets/coracaovazio.png'; // vida vazia
+            heart.src = 'assets/coracaoVazio.png'; // vida vazia
         }
         heart.className = 'heart';
         heartsContainer.appendChild(heart);
