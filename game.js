@@ -8,9 +8,12 @@ const frog = { x: 50, y: 300, width: 64, height: 64, speed: 8 };
 const oliveira = { x: 400, y: 300, width: 80, height: 80, speed: 3 };
 const perereca = { x: 200, y: 100, width: 48, height: 48, speed: 8 };
 
-// Sistema de vidas
+// Sistema de vidas e mensagem
 let lives = 3;
 let frogFacingRight = true;
+let showScaredMessage = false;
+let scaredMessageTimer = 0;
+const scaredMessageDuration = 60; // Duração em frames (~1 segundo em 60fps)
 
 // Estados do jogo
 let keys = {};
@@ -166,9 +169,49 @@ function updateHeartsDisplay() {
     }
 }
 
+function drawScaredMessage() {
+    if (!showScaredMessage) return;
+
+    const message = "Oliveira me assustou!";
+    const x = frog.x + frog.width / 2;
+    const y = frog.y - 30;
+    
+    // Fundo da mensagem
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+    ctx.strokeStyle = '#ff0000';
+    ctx.lineWidth = 2;
+    
+    // Mede o texto
+    ctx.font = "20px Arial";
+    const textWidth = ctx.measureText(message).width;
+    const padding = 10;
+    
+    // Balão de fala
+    ctx.beginPath();
+    ctx.roundRect(x - textWidth/2 - padding, y - 25, textWidth + padding*2, 30, 10);
+    ctx.fill();
+    ctx.stroke();
+    
+    // Texto
+    ctx.fillStyle = '#ffffff';
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(message, x, y - 10);
+    
+    // Triângulo apontando para o sapo
+    ctx.beginPath();
+    ctx.moveTo(x, y + 5);
+    ctx.lineTo(x - 10, y + 15);
+    ctx.lineTo(x + 10, y + 15);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+}
+
 function update() {
     if (!gameStarted || gameOver) return;
 
+    // Controle do sapo
     if (keys["arrowright"] || keys["d"]) {
         frog.x += frog.speed;
         frogFacingRight = true;
@@ -180,6 +223,7 @@ function update() {
     if (keys["arrowup"] || keys["w"]) frog.y -= frog.speed;
     if (keys["arrowdown"] || keys["s"]) frog.y += frog.speed;
 
+    // Animação do sapo
     const frogIsMoving = keys["arrowright"] || keys["d"] || 
                        keys["arrowleft"] || keys["a"] || 
                        keys["arrowup"] || keys["w"] || 
@@ -195,11 +239,13 @@ function update() {
         frogFrameIndex = 0;
     }
 
+    // Movimento do oliveira
     if (frog.x > oliveira.x) oliveira.x += oliveira.speed;
     else if (frog.x < oliveira.x) oliveira.x -= oliveira.speed;
     if (frog.y > oliveira.y) oliveira.y += oliveira.speed;
     else if (frog.y < oliveira.y) oliveira.y -= oliveira.speed;
 
+    // Movimento da perereca
     const prevX = perereca.x;
     const prevY = perereca.y;
     const dx = frog.x - perereca.x;
@@ -221,6 +267,7 @@ function update() {
         }
     }
 
+    // Animação da perereca
     const isMoving = Math.abs(perereca.x - prevX) > 0.5 || Math.abs(perereca.y - prevY) > 0.5;
     if (isMoving) {
         pererecaFrameDelay++;
@@ -233,19 +280,25 @@ function update() {
         pererecaFrameIndex = 0;
     }
 
+    // Wrap perereca
     if (perereca.x + perereca.width < 0) perereca.x = canvas.width;
     if (perereca.x > canvas.width) perereca.x = -perereca.width;
     if (perereca.y + perereca.height < 0) perereca.y = canvas.height;
     if (perereca.y > canvas.height) perereca.y = -perereca.height;
 
+    // Wrap frog
     if (frog.x + frog.width < 0) frog.x = canvas.width;
     if (frog.x > canvas.width) frog.x = -frog.width;
     if (frog.y + frog.height < 0) frog.y = canvas.height;
     if (frog.y > canvas.height) frog.y = -frog.height;
 
+    // Colisão
     if (isColliding(frog, oliveira)) {
         lives--;
         updateHeartsDisplay();
+        showScaredMessage = true;
+        scaredMessageTimer = scaredMessageDuration;
+        
         if (lives <= 0) {
             gameOver = true;
         } else {
@@ -253,6 +306,14 @@ function update() {
             frog.y = 300;
             oliveira.x = 400;
             oliveira.y = 300;
+        }
+    }
+
+    // Atualiza o timer da mensagem
+    if (showScaredMessage) {
+        scaredMessageTimer--;
+        if (scaredMessageTimer <= 0) {
+            showScaredMessage = false;
         }
     }
 }
@@ -272,6 +333,7 @@ function draw() {
         return;
     }
 
+    // Desenha a perereca
     ctx.save();
     if (pererecaDir.x < 0) {
         ctx.translate(perereca.x + perereca.width / 2, perereca.y + perereca.height / 2);
@@ -282,6 +344,7 @@ function draw() {
     }
     ctx.restore();
 
+    // Desenha o sapo
     ctx.save();
     if (!frogFacingRight) {
         ctx.translate(frog.x + frog.width / 2, frog.y + frog.height / 2);
@@ -292,7 +355,11 @@ function draw() {
     }
     ctx.restore();
 
+    // Desenha o oliveira
     ctx.drawImage(oliveiraImg, oliveira.x, oliveira.y, oliveira.width, oliveira.height);
+
+    // Desenha a mensagem se necessário
+    drawScaredMessage();
 }
 
 function drawButtons() {
@@ -450,6 +517,7 @@ function resetGame() {
     gameOver = false;
     gameStarted = true;
     keys = {};
+    showScaredMessage = false;
     
     delete menuButtons.tryAgain;
     delete menuButtons.menu;
